@@ -11,7 +11,7 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center">
                         <BookOpenIcon className="h-8 w-8 text-indigo-400" />
-                        <span className="text-white text-2xl font-bold ml-3">MistBrief</span>
+                        <span className="text-white text-2xl font-bold ml-3">MistBriefAI</span>
                     </div>
                     <div className="flex items-center space-x-4">
                         <button onClick={onLoginClick} className="text-slate-300 hover:text-white transition">Login</button>
