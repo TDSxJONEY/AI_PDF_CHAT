@@ -3,6 +3,9 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { UserIcon, AtSymbolIcon, LockClosedIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
+// --- CHANGE 1: Get the API URL from the environment variable ---
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Signup = ({ isOpen, onClose, onSwitchToLogin }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -16,7 +19,8 @@ const Signup = ({ isOpen, onClose, onSwitchToLogin }) => {
         setError('');
         setSuccess('');
         try {
-            await axios.post('http://localhost:3000/api/users/signup', { name, email, password });
+            // --- CHANGE 2: Use the API_URL variable in the request ---
+            await axios.post(`${API_URL}/api/users/signup`, { name, email, password });
             setSuccess('Signup successful! Please log in.');
             setTimeout(() => {
                 onSwitchToLogin();

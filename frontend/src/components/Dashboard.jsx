@@ -5,7 +5,10 @@ import {
     DocumentPlusIcon, TrashIcon, ExclamationTriangleIcon, 
     InformationCircleIcon, LightBulbIcon 
 } from '@heroicons/react/24/outline';
-import DocumentCardSkeleton from '../components/DocumentSkeleton.jsx'; // <-- 1. IMPORT the new skeleton component
+import DocumentCardSkeleton from '../components/DocumentSkeleton.jsx';
+
+// --- CHANGE 1: Get the API URL from the environment variable ---
+const API_URL = import.meta.env.VITE_API_URL;
 
 // --- Confirmation Modal Component (Unchanged) ---
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
@@ -48,18 +51,17 @@ const Dashboard = () => {
                 navigate('/');
                 return;
             }
-            const docsResponse = await axios.get('http://localhost:3000/api/docs/mine', { headers: { Authorization: `Bearer ${token}` } });
+            // --- CHANGE 2: Use the API_URL variable ---
+            const docsResponse = await axios.get(`${API_URL}/api/docs/mine`, { headers: { Authorization: `Bearer ${token}` } });
             setDocuments(docsResponse.data);
         } catch (err) {
             if (err.response && err.response.status === 401) {
-                // Token is invalid or expired
                 console.log("Token expired or invalid, logging out.");
-                localStorage.removeItem('token'); // 1. Clear the bad token
-                navigate('/');                     // 2. Redirect to login page
+                localStorage.removeItem('token');
+                navigate('/');
             } else {
-                // It's a different kind of error (e.g., server is down)
                 setError('Failed to fetch data. Please try again later.');
-        }
+            }
         } finally {
             if (showLoading) setLoading(false);
         }
@@ -70,7 +72,7 @@ const Dashboard = () => {
         let intervalId = null;
         if (isProcessing) {
             intervalId = setInterval(() => {
-                fetchData(false); // Fetch updates without showing the main loader
+                fetchData(false);
             }, 5000);
         }
         return () => {
@@ -105,11 +107,12 @@ const Dashboard = () => {
         setUploadMessage('Uploading...');
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:3000/api/docs/upload', formData, { headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` } });
+            // --- CHANGE 3: Use the API_URL variable ---
+            await axios.post(`${API_URL}/api/docs/upload`, formData, { headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` } });
             setUploadMessage('File uploaded successfully! Processing now...');
             setFile(null);
             if (fileInputRef.current) { fileInputRef.current.value = null; }
-            fetchData(false); // Refetch list without full page loader
+            fetchData(false);
         } catch (err) {
             const errorMessage = err.response?.data?.error || 'File upload failed. Please try again.';
             setUploadMessage(errorMessage);
@@ -130,20 +133,18 @@ const Dashboard = () => {
         if (!docToDelete) return;
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:3000/api/docs/${docToDelete._id}`, {
+            // --- CHANGE 4: Use the API_URL variable ---
+            await axios.delete(`${API_URL}/api/docs/${docToDelete._id}`, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             setDocuments(docs => docs.filter(doc => doc._id !== docToDelete._id));
         } catch (err) {
             console.error("Delete failed:", err);
-            // Optionally set an error message to display to the user
         } finally {
             closeDeleteModal();
         }
     };
     
-    // <-- 2. REMOVED the top-level loading return. The page structure now always renders.
-
     if (error) return ( <div className="p-8 text-center text-red-500">{error}</div> );
 
     return (
@@ -153,7 +154,6 @@ const Dashboard = () => {
             <main className="p-4 md:p-8">
                 <div className="w-full max-w-5xl mx-auto space-y-8">
                     
-                    {/* This section is static and renders immediately */}
                     <div className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-slate-700">
                         <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
                             <LightBulbIcon className="h-6 w-6 mr-2 text-yellow-400"/>
@@ -181,7 +181,6 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* This section is static and renders immediately */}
                     <div className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-slate-700">
                         <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
                             <DocumentPlusIcon className="h-6 w-6 mr-2 text-indigo-400"/>
@@ -209,11 +208,9 @@ const Dashboard = () => {
                         {uploadMessage && <p className={`mt-3 text-sm ${uploadMessage.startsWith('Error:') || uploadMessage.includes('Failed') || uploadMessage.includes('limit') ? 'text-red-400' : 'text-gray-300'}`}>{uploadMessage}</p>}
                     </div>
 
-                    {/* This is the dynamic section that will show a loader */}
                     <div className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-slate-700">
                         <h3 className="text-xl font-semibold text-white mb-4">Your Documents ({loading ? '...' : documents.length}/3)</h3>
                         
-                        {/* -- 3. CONDITIONAL LOGIC is now inside the card -- */}
                         {loading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {Array.from({ length: 3 }).map((_, index) => (

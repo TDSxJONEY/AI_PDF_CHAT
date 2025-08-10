@@ -3,6 +3,11 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { AtSymbolIcon, LockClosedIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
+// --- CHANGE 1: Get the API URL from the environment variable ---
+// Vite uses `import.meta.env` to access these variables.
+// The name MUST start with VITE_.
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Login = ({ isOpen, onClose, onSwitchToSignup }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -13,7 +18,11 @@ const Login = ({ isOpen, onClose, onSwitchToSignup }) => {
         e.preventDefault();
         setError('');
         try {
-            const response = await axios.post('http://localhost:3000/api/users/login', { email, password });
+            // --- CHANGE 2: Use the API_URL variable in the request ---
+            // This now points to http://localhost:8000 in development
+            // and https://mistbriefai.onrender.com in production.
+            const response = await axios.post(`${API_URL}/api/users/login`, { email, password });
+            
             const { token, user } = response.data;
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));

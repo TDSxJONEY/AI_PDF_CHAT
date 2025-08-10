@@ -3,6 +3,9 @@ import { Link, Outlet, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BookOpenIcon, ArrowRightOnRectangleIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
+// --- CHANGE 1: Get the API URL from the environment variable ---
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Navbar = ({ user, onLogout }) => {
     return (
         <nav className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-20">
@@ -50,7 +53,8 @@ const MainLayout = () => {
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
-                    const userResponse = await axios.get('http://localhost:3000/api/users/me', { headers: { Authorization: `Bearer ${token}` } });
+                    // --- CHANGE 2: Use the API_URL variable ---
+                    const userResponse = await axios.get(`${API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
                     setUser(userResponse.data);
                 }
             } catch (error) {
@@ -70,7 +74,6 @@ const MainLayout = () => {
         <div className="min-h-screen flex flex-col">
             <Navbar user={user} onLogout={handleLogout} />
             <main className="flex-1 w-full">
-                {/* The Outlet will render the matched child route (Dashboard or Workspace) */}
                 <Outlet />
             </main>
             <Footer />
