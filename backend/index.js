@@ -1,55 +1,3 @@
-// import express from "express";
-// import cors from "cors";
-// import connectDB from "./config/dBConfig.js"; // Using your import name
-// import serverConfig from "./config/serverConfig.js";
-// import userRoutes from "./routes/userRoutes.js";
-// import documentRoutes from "./routes/documentRoutes.js";
-// import aiRoutes from "./routes/aiRoutes.js";
-
-// const app = express();
-
-// // --- MIDDLEWARE SETUP ---
-
-// // 1. CORS MIDDLEWARE - This MUST come first!
-// app.use(cors({
-//   origin: 'http://localhost:5173',
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-// }));
-
-// // 2. Other middleware
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-
-
-// // --- ROUTES ---
-// app.use("/api/users", userRoutes);
-// app.use("/api/docs", documentRoutes);
-// app.use("/api/ai", aiRoutes);
-
-// // Health check route
-// app.get("/", (req, res) => {
-//   res.send("✅ AI StudyOS Backend Running...");
-// });
-
-
-// // --- SERVER INITIALIZATION ---
-// const startServer = async () => {
-//     try {
-//         // Connect to the database first
-//         await connectDB();
-        
-//         // Then, start listening for requests
-//         app.listen(serverConfig.PORT, () => {
-//             console.log(`🚀 Server started at http://localhost:${serverConfig.PORT}`);
-//         });
-//     } catch (error) {
-//         console.error("❌ Failed to start the server:", error);
-//         process.exit(1);
-//     }
-// };
-
-// startServer();
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -64,12 +12,29 @@ dotenv.config();
 
 const app = express();
 
-// --- TEMPORARY DEBUGGING STEP ---
-// This will allow requests from ANY origin to help us diagnose the issue.
-app.use(cors({ origin: '*' }));
+// --- SECURE CORS MIDDLEWARE ---
+// This is the final, secure configuration.
+const allowedOrigins = [
+  process.env.CLIENT_URL, // Your deployed Vercel URL from Render's settings
+  'http://localhost:5173'  // For your local development
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests from our list of allowed origins.
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // Block requests from any other origin.
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 
-// 2. Other middleware
+// Other middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
