@@ -50,8 +50,6 @@
 // };
 
 // startServer();
-
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -66,28 +64,10 @@ dotenv.config();
 
 const app = express();
 
-// --- MIDDLEWARE SETUP ---
+// --- TEMPORARY DEBUGGING STEP ---
+// This will allow requests from ANY origin to help us diagnose the issue.
+app.use(cors({ origin: '*' }));
 
-// 1. CORS MIDDLEWARE
-// Define the allowed origins. We'll get the production URL from an environment variable.
-const allowedOrigins = [
-  process.env.CLIENT_URL, // Your deployed Vercel URL
-  'http://localhost:5173'  // Your local frontend URL
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like server-to-server or mobile apps)
-    // and requests from our list of allowed origins.
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
 
 // 2. Other middleware
 app.use(express.json());
